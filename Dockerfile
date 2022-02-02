@@ -1,6 +1,6 @@
 FROM ubuntu:16.04
 
-LABEL author="alper.kucukural@umassmed.edu" description="Docker image containing all requirements for the dolphinnext/barcodseq pipeline"
+LABEL author="alper.kucukural@umassmed.edu" description="Docker image containing all requirements for the dolphinnext/dcrispr pipeline"
 
 RUN apt-get update --fix-missing && \
     apt-get install -y vim wget bzip2 ca-certificates curl git libtbb-dev gcc g++ libcairo2-dev
