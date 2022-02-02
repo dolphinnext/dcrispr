@@ -21,5 +21,5 @@ RUN conda env create -f /environment.yml && conda clean -a
 RUN mkdir -p /project /nl /mnt /share
 ENV PATH /opt/conda/envs/dolphinnext/bin:$PATH
 
-COPY install_packages.R /
-RUN Rscript /install_packages.R
+COPY install.R /
+RUN Rscript /install.R
