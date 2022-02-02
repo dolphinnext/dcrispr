@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 LABEL author="alper.kucukural@umassmed.edu" description="Docker image containing all requirements for the dolphinnext/dcrispr pipeline"
 
