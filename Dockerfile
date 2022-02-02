@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:16.04
 
 LABEL author="alper.kucukural@umassmed.edu" description="Docker image containing all requirements for the dolphinnext/dcrispr pipeline"
 
@@ -13,6 +13,8 @@ RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86
     echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
     echo "conda activate base" >> ~/.bashrc
 
+COPY install.R /
+
 SHELL ["/bin/bash", "--login", "-c"]
 
 COPY environment.yml /
@@ -21,5 +23,5 @@ RUN conda env create -f /environment.yml && conda clean -a
 RUN mkdir -p /project /nl /mnt /share
 ENV PATH /opt/conda/envs/dolphinnext/bin:$PATH
 
-COPY install.R /
+
 RUN Rscript /install.R
