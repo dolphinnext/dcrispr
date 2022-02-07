@@ -4,7 +4,10 @@ params.outdir = 'results'
 
 if (!params.mate){params.mate = ""} 
 if (!params.reads){params.reads = ""} 
-if (!params.inputparam){params.inputparam = ""} 
+if (!params.library){params.library = ""} 
+if (!params.countPrefix){params.countPrefix = ""} 
+if (!params.sample_label){params.sample_label = ""} 
+if (!params.testPrefix){params.testPrefix = ""} 
 // Stage empty file to be used as an optional input where required
 ch_empty_file_1 = file("$baseDir/.emptyfiles/NO_FILE_1", hidden:true)
 ch_empty_file_2 = file("$baseDir/.emptyfiles/NO_FILE_2", hidden:true)
@@ -24,6 +27,10 @@ Channel
 	.ifEmpty { error "Cannot find any reads matching: ${params.reads}" }
 	.set{g_3_reads_g0_28}
 
+g_9_txtFile_g_5 = file(params.library, type: 'any')
+Channel.value(params.countPrefix).set{g_10_text_g_5}
+Channel.value(params.sample_label).into{g_11_text_g_5;g_11_text_g_7}
+Channel.value(params.testPrefix).set{g_12_text_g_7}
 
 //* params.run_FastQC =  "no"  //* @dropdown @options:"yes","no" @description:"FastQC provides quality control checks on raw sequence data."
 
@@ -852,13 +859,25 @@ mv ${reads} reads/.
 }
 
 
+if (!((params.run_mageckCount && (params.run_mageckCount == "yes")))){
+g_9_txtFile_g_5.into{g_5_txtFile_g_7;g_5_txtFile2}
+g_5_rMarkdown1 = Channel.empty()
+} else {
+
 process mageckCount {
 
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.Rmd$/) "countRmarkdown/$filename"}
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /${countPrefix}.*.txt$/) "countTables/$filename"}
 input:
+ file library from g_9_txtFile_g_5
+ val countPrefix from g_10_text_g_5
+ val sample_label from g_11_text_g_5
  file reads from g_8_reads_g_5.collect()
 
 output:
  file "*.count.txt"  into g_5_txtFile_g_7
+ file "*.Rmd"  into g_5_rMarkdown1
+ file "${countPrefix}*.txt"  into g_5_txtFile2
 
 errorStrategy 'retry'
 maxRetries 0
@@ -874,13 +893,24 @@ mageck count --pdf-report -l ${library} -n ${countPrefix} --sample-label ${sampl
 
 """
 }
+}
+
 
 
 process mageckTest {
 
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.Rmd$/) "testRmarkdown/$filename"}
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /${testPrefix}.*.txt$/) "testTables/$filename"}
+publishDir params.outdir, mode: 'copy', saveAs: {filename -> if (filename =~ /.*.pdf$/) "Pdf_reports/$filename"}
 input:
  file countFile from g_5_txtFile_g_7
+ val testPrefix from g_12_text_g_7
+ val sample_label from g_11_text_g_7
 
+output:
+ file "*.Rmd"  into g_7_rMarkdown0
+ file "${testPrefix}*.txt"  into g_7_txtFile1
+ file "*.pdf"  into g_7_outputFilePdf2
 
 errorStrategy 'retry'
 maxRetries 0
@@ -890,12 +920,12 @@ when:
 
 script:
 
-labels = sample_label.toString()
+labels = sample_label.split(",")
 Treat = labels[0]
 Control = labels[1]
 """
 #!/bin/bash
-mageck test -k ${countFile} -t ${Treat} -c ${Control} -n {$testPrefix} --pdf-report
+mageck test -k ${countFile} -t ${Treat} -c ${Control} -n ${testPrefix} --pdf-report
 
 """
 }

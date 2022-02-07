@@ -7,3 +7,5 @@ new.pkg <- pkg[!(pkg %in% installed.packages()[, 'Package'])]
 
 packages <- c('ggplot2', 'plyr', 'dplyr', 'data.table', 'reshape', 'RColorBrewer', 'reshape2', 'circlize', 'BiocManager', 'ggplot2', 'knitr', 'xtable', 'pheatmap', 'RColorBrewer', 'rmarkdown')
 inst_pack(packages)
+
+BiocManager::install("MAGeCKFlute")
